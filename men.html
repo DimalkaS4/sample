@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DianEro | Men's Virtual Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            bg: '#0a0a0a',
+                            card: '#111111',
+                            border: '#222222'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 3D Virtual Try-On Specific Styles */
+        .tshirt-3d-container {
+            perspective: 1000px;
+        }
+
+        .tshirt-3d {
+            width: 560px;
+            max-width: 95vw;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.4));
+            cursor: grab;
+        }
+
+        .tshirt-3d:active {
+            cursor: grabbing;
+        }
+
+        .mannequin-container {
+            position: relative;
+            height: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .mannequin-image {
+            height: 100%;
+            max-height: 700px;
+            object-fit: contain;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+            transition: filter 0.5s ease;
+        }
+
+        .control-btn.active-rotate {
+            background-color: #3b82f6;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Custom Scrollbar for controls panel */
+        .controls-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .controls-panel::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 8px;
+        }
+
+        .controls-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-white text-neutral-900 dark:bg-dark-bg dark:text-neutral-100 transition-colors duration-300 font-sans antialiased">
+
+    <!-- Navbar -->
+    <nav
+        class="fixed w-full z-50 top-0 start-0 border-b border-gray-200 dark:border-dark-border bg-white/80 dark:bg-dark-bg/80 backdrop-blur-md transition-all duration-300">
+        <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-6">
+            <a href="index.html"
+                class="text-2xl font-extrabold tracking-widest uppercase text-neutral-900 dark:text-white">DianEro</a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="index.html"
+                    class="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium transition-colors">Home</a>
+                <a href="men.html" class="text-neutral-900 dark:text-white font-bold transition-colors">Men</a>
+                <a href="women.html"
+                    class="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium transition-colors">Women</a>
+                <a href="size-guide.html"
+                    class="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium transition-colors">Size
+                    Guide</a>
+                <a href="contact.html"
+                    class="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white font-medium transition-colors">Contact</a>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center space-x-4">
+                <button id="themeToggle"
+                    class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-lg w-10 h-10 flex items-center justify-center">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="mobileMenuBtn"
+                    class="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-lg">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div
+        class="mobile-menu fixed inset-0 bg-white dark:bg-dark-bg z-[60] transform translate-x-full transition-transform duration-300 flex flex-col items-center justify-center space-y-8 text-2xl">
+        <button id="closeMenu" class="absolute top-6 right-6 p-2 text-3xl hover:text-gray-600 dark:hover:text-gray-300">
+            <i class="fas fa-times"></i>
+        </button>
+        <a href="index.html" class="font-bold hover:text-gray-600 dark:hover:text-gray-300">Home</a>
+        <a href="men.html" class="font-bold text-black dark:text-white">Men</a>
+        <a href="women.html" class="font-bold hover:text-gray-600 dark:hover:text-gray-300">Women</a>
+        <a href="size-guide.html" class="font-bold hover:text-gray-600 dark:hover:text-gray-300">Size Guide</a>
+        <a href="contact.html" class="font-bold hover:text-gray-600 dark:hover:text-gray-300">Contact</a>
+    </div>
+
+    <!-- Virtual Studio Container -->
+    <div class="pt-20 h-screen flex flex-col">
+        <!-- Header -->
+        <div class="text-center p-6 border-b border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg z-10">
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-widest uppercase mb-2">Men's Virtual Studio</h1>
+            <p class="text-sm md:text-base text-neutral-500 dark:text-neutral-400">Experience our t-shirts in 3D •
+                Select colors • Virtual try-on</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+            <!-- Controls Panel -->
+            <div
+                class="controls-panel w-full lg:w-[400px] bg-white dark:bg-dark-card p-6 md:p-8 border-r border-gray-200 dark:border-dark-border flex flex-col gap-8 overflow-y-auto z-20 shadow-xl lg:shadow-none">
+
+                <!-- View Mode -->
+                <div class="space-y-4 border-b border-gray-200 dark:border-dark-border pb-8">
+                    <div class="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+                        View Mode</div>
+                    <div class="flex gap-3">
+                        <button
+                            class="view-btn flex-1 py-3 px-4 rounded-lg border border-neutral-200 dark:border-dark-border hover:border-neutral-400 dark:hover:border-neutral-500 transition-all flex items-center justify-center gap-2 font-medium text-sm bg-neutral-900 text-white dark:bg-white dark:text-black"
+                            onclick="switchView('tshirt')" id="btn-tshirt">
+                            <i class="fas fa-tshirt"></i> T-Shirt 3D
+                        </button>
+                        <button
+                            class="view-btn flex-1 py-3 px-4 rounded-lg border border-neutral-200 dark:border-dark-border hover:border-neutral-400 dark:hover:border-neutral-500 transition-all flex items-center justify-center gap-2 font-medium text-sm bg-white text-neutral-900 dark:bg-dark-bg dark:text-neutral-300"
+                            onclick="switchView('model')" id="btn-model">
+                            <i class="fas fa-user"></i> On Model
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Color Selection -->
+                <div class="space-y-4 border-b border-gray-200 dark:border-dark-border pb-8">
+                    <div class="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+                        Select Color</div>
+                    <div class="flex gap-4 flex-wrap">
+                        <div class="flex flex-col items-center gap-2 cursor-pointer group"
+                            onclick="selectColor('white')">
+                            <div class="w-16 h-16 rounded-xl border-4 border-blue-500 shadow-lg relative overflow-hidden transition-transform group-hover:scale-105 bg-gradient-to-br from-white to-gray-100 color-swatch active"
+                                id="swatch-white">
+                                <div
+                                    class="absolute inset-0 flex items-center justify-center text-neutral-800 font-bold text-xl check-mark">
+                                    ✓</div>
+                            </div>
+                            <span class="text-xs uppercase tracking-wider font-medium text-neutral-500">White</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 cursor-pointer group"
+                            onclick="selectColor('black')">
+                            <div class="w-16 h-16 rounded-xl border-4 border-transparent relative overflow-hidden transition-transform group-hover:scale-105 bg-gradient-to-br from-neutral-800 to-black color-swatch"
+                                id="swatch-black">
+                                <div
+                                    class="absolute inset-0 flex items-center justify-center text-white font-bold text-xl check-mark hidden">
+                                    ✓</div>
+                            </div>
+                            <span class="text-xs uppercase tracking-wider font-medium text-neutral-500">Black</span>
+                        </div>
+                        <div class="flex flex-col items-center gap-2 cursor-pointer group"
+                            onclick="selectColor('navy')">
+                            <div class="w-16 h-16 rounded-xl border-4 border-transparent relative overflow-hidden transition-transform group-hover:scale-105 bg-gradient-to-br from-[#1e3a5f] to-[#0d1f33] color-swatch"
+                                id="swatch-navy">
+                                <div
+                                    class="absolute inset-0 flex items-center justify-center text-white font-bold text-xl check-mark hidden">
+                                    ✓</div>
+                            </div>
+                            <span class="text-xs uppercase tracking-wider font-medium text-neutral-500">Navy</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="space-y-4 border-b border-gray-200 dark:border-dark-border pb-8">
+                    <div class="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+                        Product Details</div>
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2" id="productName">Essential T-Shirt - White</h2>
+                        <div class="text-3xl font-extrabold text-blue-600 dark:text-blue-400 mb-4" id="productPrice">
+                            $45.00</div>
+                        <p class="text-neutral-600 dark:text-neutral-400 leading-relaxed text-sm">Premium cotton blend
+                            engineered for the perfect fit. Minimalist design meets maximum comfort. Available in White,
+                            Black, and Navy Blue.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Preview Area -->
+            <div class="flex-1 flex flex-col bg-gray-100 dark:bg-[#050505] relative overflow-hidden">
+                <!-- T-Shirt 3D View -->
+                <div id="tshirt-3d-view" class="flex-1 flex items-center justify-center relative">
+                    <div class="tshirt-3d-container">
+                        <img src="images/white t shirt.png" alt="White T-Shirt" class="tshirt-3d" id="tshirt3dImage">
+                    </div>
+                </div>
+
+                <!-- Model View -->
+                <div id="model-view" class="flex-1 hidden items-center justify-center relative">
+                    <div class="mannequin-container">
+                        <img src="images/male_model_white_tshirt.png" alt="Male Model wearing T-Shirt"
+                            class="mannequin-image" id="modelImage">
+                        <canvas id="userTryOnCanvas"
+                            class="hidden max-h-[700px] w-auto rounded-2xl shadow-2xl"></canvas>
+                    </div>
+
+                    <!-- Upload + Try-On Panel -->
+                    <div class="absolute top-6 left-1/2 -translate-x-1/2 z-20 w-[min(92%,520px)]">
+                        <div
+                            class="bg-white/90 dark:bg-dark-card/90 backdrop-blur-sm border border-gray-200 dark:border-dark-border rounded-2xl p-4 shadow-xl">
+                            <div class="flex items-center justify-between gap-3 flex-wrap">
+                                <div
+                                    class="text-xs font-bold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-300">
+                                    Try On Your Photo</div>
+                                <label
+                                    class="px-4 py-2 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-xs tracking-widest cursor-pointer hover:opacity-90 transition-opacity">
+                                    <input id="userPhotoInput" type="file" accept="image/*" class="hidden">
+                                    Upload Photo
+                                </label>
+                                <button id="clearPhotoBtn" type="button"
+                                    class="px-4 py-2 rounded-full border border-gray-300 dark:border-dark-border text-neutral-700 dark:text-neutral-200 font-bold text-xs tracking-widest hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">Clear</button>
+                                <button type="button" onclick="requestGeminiTryOn()"
+                                    class="px-4 py-2 rounded-full border border-gray-300 dark:border-dark-border text-neutral-700 dark:text-neutral-200 font-bold text-xs tracking-widest hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">Gemini
+                                    AI</button>
+                            </div>
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                                <label
+                                    class="text-xs text-neutral-600 dark:text-neutral-300 flex items-center justify-between gap-3">
+                                    <span class="font-bold tracking-widest">SCALE</span>
+                                    <input id="tryOnScale" type="range" min="50" max="170" value="100" class="w-40">
+                                </label>
+                                <label
+                                    class="text-xs text-neutral-600 dark:text-neutral-300 flex items-center justify-between gap-3">
+                                    <span class="font-bold tracking-widest">ROTATE</span>
+                                    <input id="tryOnRotate" type="range" min="-20" max="20" value="0" class="w-40">
+                                </label>
+                            </div>
+                            <p id="tryOnStatus" class="mt-3 text-xs text-neutral-500 dark:text-neutral-400">Upload a
+                                photo to start.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-30 opacity-0 pointer-events-none transition-opacity duration-300"
+                    id="loadingOverlay">
+                    <div class="spinner mb-4"></div>
+                    <p class="text-neutral-400 font-medium tracking-wider">Loading T-Shirt...</p>
+                </div>
+
+                <!-- Controls -->
+                <div
+                    class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 bg-white/90 dark:bg-dark-card/90 backdrop-blur-sm p-4 rounded-full border border-gray-200 dark:border-dark-border shadow-2xl z-20">
+                    <button
+                        class="control-btn w-12 h-12 rounded-full bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-neutral-700 dark:text-neutral-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 dark:hover:bg-blue-500 dark:hover:text-white transition-all flex items-center justify-center text-lg shadow-sm"
+                        onclick="rotateLeft()" title="Rotate Left">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button
+                        class="control-btn w-12 h-12 rounded-full bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-neutral-700 dark:text-neutral-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 dark:hover:bg-blue-500 dark:hover:text-white transition-all flex items-center justify-center text-lg shadow-sm"
+                        onclick="resetView()" title="Reset View">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button
+                        class="control-btn w-12 h-12 rounded-full bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-neutral-700 dark:text-neutral-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 dark:hover:bg-blue-500 dark:hover:text-white transition-all flex items-center justify-center text-lg shadow-sm"
+                        onclick="rotateRight()" title="Rotate Right">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <div class="w-px h-8 bg-gray-300 dark:bg-gray-700 self-center mx-1"></div>
+                    <button
+                        class="control-btn w-12 h-12 rounded-full bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-neutral-700 dark:text-neutral-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 dark:hover:bg-blue-500 dark:hover:text-white transition-all flex items-center justify-center text-lg shadow-sm"
+                        onclick="zoomIn()" title="Zoom In">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                        class="control-btn w-12 h-12 rounded-full bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-neutral-700 dark:text-neutral-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 dark:hover:bg-blue-500 dark:hover:text-white transition-all flex items-center justify-center text-lg shadow-sm"
+                        onclick="zoomOut()" title="Zoom Out">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button
+                        class="control-btn w-12 h-12 rounded-full bg-white dark:bg-dark-bg border border-gray-200 dark:border-dark-border text-neutral-700 dark:text-neutral-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 dark:hover:bg-blue-500 dark:hover:text-white transition-all flex items-center justify-center text-lg shadow-sm"
+                        onclick="toggleAutoRotate()" title="Auto Rotate" id="autoRotateBtn">
+                        <i class="fas fa-circle-notch"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 translate-y-20 bg-blue-600 text-white px-8 py-3 rounded-lg font-bold shadow-xl z-50 opacity-0 transition-all duration-300"
+        id="toast">Color updated!</div>
+
+    <!-- AI Models -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="assets/js/script.js"></script>
+    <script src="assets/js/photo-tryon.js"></script>
+    <script>
+        // ==========================================
+        // DIANERO MEN'S VIRTUAL STUDIO
+        // 3D T-Shirt Visualization & Virtual Try-On
+        // ==========================================
+
+        // State
+        let currentColor = 'white';
+        let currentView = 'tshirt';
+        let rotationAngle = 0;
+        let zoomLevel = 1;
+        let autoRotate = false;
+        let autoRotateInterval = null;
+
+        // T-Shirt Images Map - Your actual t-shirt images
+        const tshirtImages = {
+            white: 'images/white t shirt.png',
+            black: 'images/black t shirt.png',
+            navy: 'images/navy blue t shirt.png'
+        };
+
+        // Model Images Map - Corresponding model photos
+        const modelImages = {
+            white: 'images/male_model_white_tshirt.png',
+            black: 'images/male_model_black_tshirt.png',
+            navy: 'images/male_model_navy_tshirt.png'
+        };
+
+        // Color Names
+        const colorNames = {
+            white: 'White',
+            black: 'Black',
+            navy: 'Navy Blue'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initDragRotation();
+            preloadImages();
+
+            // Photo upload try-on (overlay-based)
+            if (typeof window.initPhotoTryOn === 'function') {
+                window.initPhotoTryOn({});
+            }
+        });
+
+        // Preload all t-shirt images for smooth switching
+        function preloadImages() {
+            Object.values(tshirtImages).forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
+
+        // Switch View Mode (T-Shirt 3D / On Model)
+        function switchView(view) {
+            currentView = view;
+
+            // Update buttons
+            const btnTshirt = document.getElementById('btn-tshirt');
+            const btnModel = document.getElementById('btn-model');
+
+            // Reset classes
+            const activeClasses = ['bg-neutral-900', 'text-white', 'dark:bg-white', 'dark:text-black', 'border-transparent'];
+            const inactiveClasses = ['bg-white', 'text-neutral-900', 'dark:bg-dark-bg', 'dark:text-neutral-300', 'border-neutral-200', 'dark:border-dark-border'];
+
+            if (view === 'tshirt') {
+                btnTshirt.classList.add(...activeClasses);
+                btnTshirt.classList.remove(...inactiveClasses);
+
+                btnModel.classList.remove(...activeClasses);
+                btnModel.classList.add(...inactiveClasses);
+            } else {
+                btnModel.classList.add(...activeClasses);
+                btnModel.classList.remove(...inactiveClasses);
+
+                btnTshirt.classList.remove(...activeClasses);
+                btnTshirt.classList.add(...inactiveClasses);
+            }
+
+            // Toggle views with animation
+            const tshirtView = document.getElementById('tshirt-3d-view');
+            const modelView = document.getElementById('model-view');
+
+            if (view === 'tshirt') {
+                tshirtView.style.display = 'flex';
+                modelView.style.display = 'none';
+                gsap.fromTo(tshirtView, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5 });
+            } else {
+                tshirtView.style.display = 'none';
+                modelView.style.display = 'flex';
+                gsap.fromTo(modelView, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5 });
+            }
+
+            resetView();
+            showToast(`Switched to ${view === 'tshirt' ? 'T-Shirt 3D' : 'Model'} view`);
+        }
+
+        // Select Color - Changes the t-shirt image
+        function selectColor(color) {
+            showLoading();
+            currentColor = color;
+
+            // Update swatches
+            document.querySelectorAll('.color-swatch').forEach(swatch => {
+                swatch.classList.remove('border-blue-500', 'shadow-lg');
+                swatch.classList.add('border-transparent');
+                swatch.querySelector('.check-mark').classList.add('hidden');
+            });
+
+            const activeSwatch = document.getElementById(`swatch-${color}`);
+            activeSwatch.classList.remove('border-transparent');
+            activeSwatch.classList.add('border-blue-500', 'shadow-lg');
+            activeSwatch.querySelector('.check-mark').classList.remove('hidden');
+
+            // Update T-Shirt 3D Image
+            const tshirtImg = document.getElementById('tshirt3dImage');
+
+            // Animate out
+            gsap.to(tshirtImg, {
+                opacity: 0,
+                scale: 0.9,
+                duration: 0.2,
+                onComplete: () => {
+                    // Change image source
+                    tshirtImg.src = tshirtImages[color];
+                    tshirtImg.alt = `${colorNames[color]} T-Shirt`;
+                }
+            });
+
+            // When image loads, animate in
+            tshirtImg.onload = () => {
+                gsap.to(tshirtImg, {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.3
+                });
+                hideLoading();
+                showToast(`${colorNames[color]} T-Shirt selected`);
+            };
+
+            // Update product name
+            document.getElementById('productName').textContent = `Essential T-Shirt - ${colorNames[color]}`;
+
+            // Update model view with color effect
+            updateModelView(color);
+
+            // Fallback hide loading
+            setTimeout(hideLoading, 1500);
+        }
+
+        // Update Model View with color visualization
+        function updateModelView(color) {
+            const modelImg = document.getElementById('modelImage');
+            const targetSrc = modelImages[color];
+
+            // Try to load the specific model image for this color
+            const tempImg = new Image();
+
+            tempImg.onload = () => {
+                // Image exists, use it directly
+                gsap.to(modelImg, {
+                    opacity: 0,
+                    duration: 0.2,
+                    onComplete: () => {
+                        modelImg.src = targetSrc;
+                        modelImg.style.filter = 'none';
+                        gsap.to(modelImg, { opacity: 1, duration: 0.2 });
+                    }
+                });
+            };
+
+            tempImg.onerror = () => {
+                // Image missing, fallback to CSS filters on the white model
+                console.warn(`Missing model image for ${color}, falling back to filters.`);
+                if (modelImg.src.indexOf(modelImages['white']) === -1) {
+                    modelImg.src = modelImages['white'];
+                }
+
+                gsap.to(modelImg, {
+                    duration: 0.3,
+                    onStart: () => {
+                        if (color === 'white') {
+                            modelImg.style.filter = 'none';
+                        } else if (color === 'black') {
+                            modelImg.style.filter = 'brightness(0.9) contrast(1.15) saturate(0.8)';
+                        } else if (color === 'navy') {
+                            modelImg.style.filter = 'hue-rotate(200deg) brightness(0.95) saturate(1.2)';
+                        }
+                    }
+                });
+            };
+
+            tempImg.src = targetSrc;
+        }
+
+        // Drag Rotation for 3D effect
+        function initDragRotation() {
+            const tshirtImg = document.getElementById('tshirt3dImage');
+            let isDragging = false;
+            let startX = 0;
+
+            // Mouse events
+            tshirtImg.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                tshirtImg.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const deltaX = e.clientX - startX;
+                rotationAngle += deltaX * 0.5;
+                startX = e.clientX;
+
+                applyTransform();
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                tshirtImg.style.cursor = 'grab';
+            });
+
+            // Touch events for mobile
+            tshirtImg.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                startX = e.touches[0].clientX;
+            }, { passive: true });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+
+                const deltaX = e.touches[0].clientX - startX;
+                rotationAngle += deltaX * 0.5;
+                startX = e.touches[0].clientX;
+
+                applyTransform();
+            }, { passive: true });
+
+            document.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+        }
+
+        // Apply 3D Transform to t-shirt
+        function applyTransform() {
+            const tshirtImg = document.getElementById('tshirt3dImage');
+            const modelContainer = document.querySelector('.mannequin-container');
+
+            // Calculate 3D rotation effect
+            const rotateY = rotationAngle % 360;
+
+            // Create perspective flip effect
+            const perspective = Math.cos(rotateY * Math.PI / 180);
+            const scaleX = Math.abs(perspective) < 0.1 ? 0.1 : Math.abs(perspective);
+
+            if (currentView === 'tshirt') {
+                tshirtImg.style.transform = `
+                    scale(${zoomLevel})
+                    rotateY(${rotateY}deg)
+                `;
+                tshirtImg.style.filter = `drop-shadow(0 ${30 * zoomLevel}px ${60 * zoomLevel}px rgba(0,0,0,0.4))`;
+            } else if (modelContainer) {
+                modelContainer.style.transform = `scale(${zoomLevel})`;
+            }
+        }
+
+        // Rotation Controls
+        function rotateLeft() {
+            rotationAngle -= 30;
+            gsap.to({}, {
+                duration: 0.3,
+                onUpdate: applyTransform
+            });
+            applyTransform();
+        }
+
+        function rotateRight() {
+            rotationAngle += 30;
+            gsap.to({}, {
+                duration: 0.3,
+                onUpdate: applyTransform
+            });
+            applyTransform();
+        }
+
+        // Zoom Controls
+        function zoomIn() {
+            zoomLevel = Math.min(zoomLevel + 0.15, 2);
+            applyTransform();
+            showToast('Zoomed in');
+        }
+
+        function zoomOut() {
+            zoomLevel = Math.max(zoomLevel - 0.15, 0.5);
+            applyTransform();
+            showToast('Zoomed out');
+        }
+
+        // Reset View
+        function resetView() {
+            rotationAngle = 0;
+            zoomLevel = 1;
+            applyTransform();
+        }
+
+        // Auto Rotate
+        function toggleAutoRotate() {
+            autoRotate = !autoRotate;
+            const btn = document.getElementById('autoRotateBtn');
+
+            if (autoRotate) {
+                btn.classList.add('active-rotate');
+                autoRotateInterval = setInterval(() => {
+                    rotationAngle += 1;
+                    applyTransform();
+                }, 30);
+                showToast('Auto-rotate enabled');
+            } else {
+                btn.classList.remove('active-rotate');
+                clearInterval(autoRotateInterval);
+                showToast('Auto-rotate disabled');
+            }
+        }
+
+        // Loading States
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2000);
+        }
+
+    </script>
+
+</body>
+
+</html>
