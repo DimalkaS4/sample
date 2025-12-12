@@ -258,17 +258,18 @@
                             <div class="flex items-center justify-between gap-3 flex-wrap">
                                 <div
                                     class="text-xs font-bold uppercase tracking-[0.2em] text-neutral-600 dark:text-neutral-300">
-                                    Try On Your Photo</div>
+                                    Virtual Try-On</div>
                                 <label
                                     class="px-4 py-2 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black font-bold text-xs tracking-widest cursor-pointer hover:opacity-90 transition-opacity">
                                     <input id="userPhotoInput" type="file" accept="image/*" class="hidden">
-                                    Upload Photo
+                                    📸 Upload Photo
                                 </label>
+                                <button id="fitOnBtn" type="button" onclick="window.requestGeminiTryOn()"
+                                    class="px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-xs tracking-widest hover:opacity-90 transition-opacity shadow-lg">
+                                    ✨ FIT ON (AI)
+                                </button>
                                 <button id="clearPhotoBtn" type="button"
                                     class="px-4 py-2 rounded-full border border-gray-300 dark:border-dark-border text-neutral-700 dark:text-neutral-200 font-bold text-xs tracking-widest hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">Clear</button>
-                                <button type="button" onclick="requestGeminiTryOn()"
-                                    class="px-4 py-2 rounded-full border border-gray-300 dark:border-dark-border text-neutral-700 dark:text-neutral-200 font-bold text-xs tracking-widest hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">Gemini
-                                    AI</button>
                             </div>
                             <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
                                 <label
@@ -282,8 +283,9 @@
                                     <input id="tryOnRotate" type="range" min="-20" max="20" value="0" class="w-40">
                                 </label>
                             </div>
-                            <p id="tryOnStatus" class="mt-3 text-xs text-neutral-500 dark:text-neutral-400">Upload a
-                                photo to start.</p>
+                            <p id="tryOnStatus" class="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+                                <strong>How to use:</strong> 1) Select a color 2) Switch to "On Model" view 3) Upload your photo 4) Click FIT ON button
+                            </p>
                         </div>
                     </div>
                 </div>
