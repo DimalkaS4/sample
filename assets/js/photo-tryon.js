@@ -58,11 +58,18 @@ window.initPhotoTryOn = function () {
     // Make this function available globally so the HTML button can call it
     window.requestGeminiTryOn = async function() {
         if (!userImage) {
-            alert("Please upload a photo first!");
+            infoStatus.textContent = "❌ Please upload a photo first!";
+            infoStatus.style.color = "#ef4444";
             return;
         }
 
-        infoStatus.textContent = "🤖 AI is analyzing your pose...";
+        if (!shirtImage) {
+            infoStatus.textContent = "❌ Please select a t-shirt color first!";
+            infoStatus.style.color = "#ef4444";
+            return;
+        }
+
+        infoStatus.textContent = "🤖 AI is analyzing your pose and fitting the t-shirt...";
         infoStatus.style.color = "#3b82f6";
 
         try {
@@ -70,9 +77,11 @@ window.initPhotoTryOn = function () {
             if (!posenetModel) {
                 // Ensure TensorFlow is loaded
                 if (typeof posenet === 'undefined') {
-                    throw new Error("TensorFlow/PoseNet libraries not loaded in HTML.");
+                    throw new Error("TensorFlow/PoseNet libraries failed to load. Please check your internet connection or try again later.");
                 }
+                infoStatus.textContent = "🤖 Loading AI model...";
                 posenetModel = await posenet.load();
+                infoStatus.textContent = "🤖 AI model loaded! Analyzing your pose...";
             }
 
             // 2. Estimate Pose
@@ -125,17 +134,19 @@ window.initPhotoTryOn = function () {
                 scaleInput.value = Math.min(Math.max(state.scale * 100, 50), 170);
                 rotateInput.value = state.rotation;
 
-                infoStatus.textContent = "✨ Auto-fit complete! Adjust if needed.";
-                infoStatus.style.color = "";
+                infoStatus.textContent = "✨ Auto-fit complete! Fine-tune with sliders or drag to adjust.";
+                infoStatus.style.color = "#10b981";
                 
                 draw();
             } else {
-                infoStatus.textContent = "Could not clearly detect shoulders. Please try a clearer photo.";
+                infoStatus.textContent = "⚠️ Could not clearly detect shoulders. Please try a clearer photo with visible shoulders, or fit manually using sliders.";
+                infoStatus.style.color = "#f59e0b";
             }
 
         } catch (error) {
             console.error("AI Try-On Error:", error);
-            infoStatus.textContent = "AI Error. Please fit manually.";
+            infoStatus.textContent = "❌ AI Error: " + error.message + ". Please fit manually using the sliders below.";
+            infoStatus.style.color = "#ef4444";
         }
     };
 
@@ -144,6 +155,9 @@ window.initPhotoTryOn = function () {
     function handleUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
+
+        infoStatus.textContent = "Loading your photo...";
+        infoStatus.style.color = "#3b82f6";
 
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -176,7 +190,8 @@ window.initPhotoTryOn = function () {
         state.scale = parseFloat(scaleInput.value) / 100;
         state.rotation = parseFloat(rotateInput.value);
 
-        infoStatus.textContent = "Drag to move • Use sliders to fit • Or click Auto Fit";
+        infoStatus.textContent = "✅ Photo uploaded! Now click the 'FIT ON (AI)' button for automatic fitting, or drag to position manually.";
+        infoStatus.style.color = "#10b981";
         draw();
     }
 
@@ -185,7 +200,8 @@ window.initPhotoTryOn = function () {
         canvas.classList.add('hidden');
         document.getElementById('modelImage').classList.remove('hidden');
         fileInput.value = '';
-        infoStatus.textContent = "Upload a photo to start.";
+        infoStatus.textContent = "Photo cleared. Upload a new photo to try on.";
+        infoStatus.style.color = "";
     }
 
     function updateShirtImageFromMain() {
