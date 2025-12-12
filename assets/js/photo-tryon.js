@@ -60,12 +60,6 @@ window.initPhotoTryOn = function () {
         if (!userImage) {
             infoStatus.textContent = "❌ Please upload a photo first!";
             infoStatus.style.color = "#ef4444";
-            
-            // Flash the upload button to guide the user
-            const uploadLabel = document.querySelector('label[for="userPhotoInput"]');
-            if (uploadLabel) {
-                uploadLabel.style.animation = "pulse 0.5s ease 3";
-            }
             return;
         }
 
@@ -83,7 +77,7 @@ window.initPhotoTryOn = function () {
             if (!posenetModel) {
                 // Ensure TensorFlow is loaded
                 if (typeof posenet === 'undefined') {
-                    throw new Error("TensorFlow/PoseNet libraries not loaded. Please refresh the page.");
+                    throw new Error("TensorFlow/PoseNet libraries failed to load. Please check your internet connection or try again later.");
                 }
                 infoStatus.textContent = "🤖 Loading AI model...";
                 posenetModel = await posenet.load();
@@ -140,7 +134,7 @@ window.initPhotoTryOn = function () {
                 scaleInput.value = Math.min(Math.max(state.scale * 100, 50), 170);
                 rotateInput.value = state.rotation;
 
-                infoStatus.textContent = "✨ Auto-fit complete! The t-shirt has been fitted to your photo. You can fine-tune using sliders or drag to adjust.";
+                infoStatus.textContent = "✨ Auto-fit complete! Fine-tune with sliders or drag to adjust.";
                 infoStatus.style.color = "#10b981";
                 
                 draw();
